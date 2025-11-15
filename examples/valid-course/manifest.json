@@ -1,0 +1,21 @@
+{
+  "title": "Introduction to Python Programming",
+  "version": "1.0.0",
+  "author": "Jane Doe",
+  "description": "A comprehensive introduction to Python programming for beginners",
+  "language": "en",
+  "modules": [
+    {
+      "id": "module-1",
+      "title": "Getting Started with Python",
+      "content": "modules/01-getting-started.html",
+      "order": 1
+    },
+    {
+      "id": "module-2",
+      "title": "Variables and Data Types",
+      "content": "modules/02-variables.html",
+      "order": 2
+    }
+  ]
+}

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edpak - Open Standard for Educational Course Packaging</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #7f8c8d;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        .spec-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .requirement {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edpak Standard v1.0</h1>
+    <p><strong>An open standard for packaging educational courses</strong></p>
+
+    <h2>Overview</h2>
+    <p>Edpak is a ZIP-based open standard for packaging educational courses and learning materials. It provides a consistent, portable format for distributing course content across different platforms and learning management systems.</p>
+
+    <h2>Specification</h2>
+
+    <div class="spec-box">
+        <h3>File Format</h3>
+        <p>An edpak file is a standard ZIP archive with a <code>.edpak</code> file extension.</p>
+    </div>
+
+    <h3>Required Structure</h3>
+    <div class="requirement">
+        <strong>REQUIRED:</strong> Every edpak file MUST contain a <code>manifest.json</code> file in the root directory.
+    </div>
+
+    <h3>Manifest Schema</h3>
+    <p>The <code>manifest.json</code> file must be valid JSON and contain the following fields:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>title</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The title of the course</td>
+            </tr>
+            <tr>
+                <td><code>version</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Version number (semver recommended)</td>
+            </tr>
+            <tr>
+                <td><code>author</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Name of the course author or organization</td>
+            </tr>
+            <tr>
+                <td><code>description</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>A brief description of the course content</td>
+            </tr>
+            <tr>
+                <td><code>language</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>ISO 639-1 language code (e.g., "en", "es")</td>
+            </tr>
+            <tr>
+                <td><code>modules</code></td>
+                <td>array</td>
+                <td>Yes</td>
+                <td>Array of module objects (see below)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Module Object Schema</h3>
+    <p>Each module object in the <code>modules</code> array must contain:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Unique identifier for the module</td>
+            </tr>
+            <tr>
+                <td><code>title</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Title of the module</td>
+            </tr>
+            <tr>
+                <td><code>content</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Path to the content file (relative to package root)</td>
+            </tr>
+            <tr>
+                <td><code>order</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Order in which the module should be presented</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Example Manifest</h3>
+    <pre><code>{
+  "title": "Introduction to Python Programming",
+  "version": "1.0.0",
+  "author": "Jane Doe",
+  "description": "A comprehensive introduction to Python programming for beginners",
+  "language": "en",
+  "modules": [
+    {
+      "id": "module-1",
+      "title": "Getting Started with Python",
+      "content": "modules/01-getting-started.html",
+      "order": 1
+    },
+    {
+      "id": "module-2",
+      "title": "Variables and Data Types",
+      "content": "modules/02-variables.html",
+      "order": 2
+    }
+  ]
+}</code></pre>
+
+    <h2>Content Files</h2>
+    <p>Content files referenced in the manifest can be in various formats:</p>
+    <ul>
+        <li>HTML (.html)</li>
+        <li>Markdown (.md)</li>
+        <li>PDF (.pdf)</li>
+        <li>Video files (.mp4, .webm)</li>
+        <li>Other educational content formats</li>
+    </ul>
+
+    <h2>Directory Structure Example</h2>
+    <pre><code>course.edpak (ZIP file)
+├── manifest.json
+├── modules/
+│   ├── 01-getting-started.html
+│   ├── 02-variables.html
+│   └── resources/
+│       ├── image1.png
+│       └── video1.mp4
+└── assets/
+    └── styles.css</code></pre>
+
+    <h2>Verification Tool</h2>
+    <p>A Python verification tool is provided to check if an edpak file is compliant with this standard.</p>
+    
+    <h3>Installation</h3>
+    <pre><code>pip install edpak-validator</code></pre>
+    
+    <h3>Usage</h3>
+    <pre><code># From command line
+edpak-verify course.edpak
+
+# From Python
+from edpak_validator import verify_edpak
+
+is_valid, errors = verify_edpak('course.edpak')
+if is_valid:
+    print("Valid edpak file!")
+else:
+    print("Invalid:", errors)</code></pre>
+
+    <h2>Compliance Requirements</h2>
+    <div class="requirement">
+        <p>To be considered a valid edpak file, the package must:</p>
+        <ul>
+            <li>Be a valid ZIP archive</li>
+            <li>Have a <code>.edpak</code> file extension</li>
+            <li>Contain a <code>manifest.json</code> file in the root directory</li>
+            <li>Have a valid JSON manifest with all required fields</li>
+            <li>All content files referenced in the manifest must exist in the archive</li>
+            <li>Module IDs must be unique within the package</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Edpak Standard v1.0 - Open Standard for Educational Course Packaging</p>
+        <p><a href="https://github.com/pierce403/edpak">GitHub Repository</a></p>
+    </div>
+</body>
+</html>
