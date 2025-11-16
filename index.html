@@ -93,7 +93,7 @@
         <p>An edpak file is a standard ZIP archive with a <code>.edpak</code> file extension.</p>
     </div>
 
-    <h3>Required Structure</h3>
+    <h3>Required Structure (Core v1.0)</h3>
     <div class="requirement">
         <strong>REQUIRED:</strong> Every edpak file MUST contain a <code>manifest.json</code> file in the root directory.
     </div>
@@ -178,8 +178,8 @@
             <tr>
                 <td><code>content</code></td>
                 <td>string</td>
-                <td>Yes</td>
-                <td>Path to the content file (relative to package root)</td>
+                <td>No</td>
+                <td>Path to an optional pre-rendered module content file (relative to package root)</td>
             </tr>
             <tr>
                 <td><code>order</code></td>
@@ -223,17 +223,167 @@
         <li>Other educational content formats</li>
     </ul>
 
-    <h2>Directory Structure Example</h2>
+    <h2>Directory Structure</h2>
+    <p>The core standard only requires a valid <code>manifest.json</code>, but the reference implementation follows this layout:</p>
     <pre><code>course.edpak (ZIP file)
-├── manifest.json
-├── modules/
-│   ├── 01-getting-started.html
-│   ├── 02-variables.html
-│   └── resources/
-│       ├── image1.png
-│       └── video1.mp4
-└── assets/
-    └── styles.css</code></pre>
+├── manifest.json                # REQUIRED
+├── README.txt                   # OPTIONAL human-readable summary
+├── images/                      # Image assets (e.g., JPEG, PNG)
+│   └── &lt;FileName&gt;
+├── videos/                      # Video assets
+│   └── &lt;FileName&gt;
+└── files/                       # Other asset types
+    └── &lt;FileName&gt;</code></pre>
+
+    <p>All paths referenced in <code>modules[*].content</code> and in any embedded HTML must resolve to files that exist in the archive.</p>
+
+    <h2>Extension Fields for Richer Course Data</h2>
+    <p>Edpak v1.0 keeps the core manifest intentionally small. Implementations may add additional top-level fields to <code>manifest.json</code> to preserve richer course structures. The reference implementation uses the following optional extensions:</p>
+
+    <h3><code>lessons</code> (optional)</h3>
+    <p>An array describing lesson-level structure within modules.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Unique identifier for the lesson (e.g. "lesson-123")</td>
+            </tr>
+            <tr>
+                <td><code>moduleId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>ID of the module this lesson belongs to (e.g. "module-1")</td>
+            </tr>
+            <tr>
+                <td><code>title</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Lesson title</td>
+            </tr>
+            <tr>
+                <td><code>type</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Lesson type (e.g. "Html", "Text", "Image", "Video", "MultipleChoice")</td>
+            </tr>
+            <tr>
+                <td><code>status</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Status value from the source system (e.g. "Active")</td>
+            </tr>
+            <tr>
+                <td><code>order</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Order of the lesson within its module</td>
+            </tr>
+            <tr>
+                <td><code>description</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Lesson description</td>
+            </tr>
+            <tr>
+                <td><code>content</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Raw lesson content from the source system (HTML, text, GUID, etc.)</td>
+            </tr>
+            <tr>
+                <td><code>fileId</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Identifier of an associated binary file, if any</td>
+            </tr>
+            <tr>
+                <td><code>filePath</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Resolved file path inside the archive (e.g. "images/slide1.jpg")</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3><code>files</code> (optional)</h3>
+    <p>An array describing binary assets included in the package.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Source-system file identifier</td>
+            </tr>
+            <tr>
+                <td><code>fileName</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Original file name</td>
+            </tr>
+            <tr>
+                <td><code>contentType</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>MIME content type (e.g. "image/jpeg")</td>
+            </tr>
+            <tr>
+                <td><code>size</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>File size in bytes</td>
+            </tr>
+            <tr>
+                <td><code>path</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Relative path of the file inside the archive</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3><code>missingFiles</code> (optional)</h3>
+    <p>An array of human-readable strings describing any files that were referenced in the source system but could not be resolved or downloaded into the package.</p>
+
+    <h3><code>x_source_platform</code> (optional)</h3>
+    <p>An object carrying source-system metadata, for example:</p>
+    <ul>
+        <li><code>courseId</code></li>
+        <li><code>courseStatus</code></li>
+        <li><code>exportedBy</code></li>
+        <li><code>exportedDate</code></li>
+        <li><code>moduleCount</code>, <code>lessonCount</code>, <code>fileCount</code></li>
+    </ul>
+
+    <h3><code>x_source_author</code> (optional)</h3>
+    <p>An object documenting how the <code>author</code> field was derived, for example:</p>
+    <ul>
+        <li><code>value</code>: the effective author string</li>
+        <li><code>from</code>: a short description such as "ExportedBy"</li>
+    </ul>
+
+    <h3><code>x_spec_notes</code> (optional)</h3>
+    <p>An array of strings capturing free-form notes about how the package maps richer platform concepts into the current Edpak core schema. For example, a producer might note that multiple-choice quizzes are represented as lessons plus HTML content, since v1.0 has no dedicated quiz model.</p>
+
+    <p>All of these extension fields are OPTIONAL. Consumers that only understand the core Edpak v1.0 fields can safely ignore them, while more advanced tools can use them to reconstruct a richer course model.</p>
 
     <h2>Verification Tool</h2>
     <p>A Python verification tool is provided to check if an edpak file is compliant with this standard.</p>

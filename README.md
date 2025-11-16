@@ -74,7 +74,7 @@ python3 edpak_validator.py examples/example-course.edpak
 
 An edpak file is a standard ZIP archive with a `.edpak` file extension.
 
-### Required Structure
+### Required Structure (Core v1.0)
 
 Every edpak file **MUST** contain a `manifest.json` file in the root directory.
 
@@ -90,14 +90,19 @@ Optional fields:
 - `description` (string): A brief description of the course content
 - `language` (string): ISO 639-1 language code (e.g., "en", "es")
 
+Implementations MAY include additional top-level fields in `manifest.json` (for example `lessons`, `files`, `missingFiles`, `x_source_platform`, `x_source_author`, `x_spec_notes`) to capture richer course structures. These extensions are optional and can be ignored by consumers that only care about the core v1.0 fields.
+
 ### Module Object Fields
 
 Required fields:
 - `id` (string): Unique identifier for the module
 - `title` (string): Title of the module
-- `content` (string): Path to the content file (relative to package root)
+- `order` (number): Order in which the module should be presented
 
 Optional fields:
+- `content` (string): Path to an optional pre-rendered module content file (relative to package root)
+
+For many producers, modules act primarily as structural containers for lessons, and no standalone HTML file is needed.
 - `order` (number): Order in which the module should be presented
 
 ### Example Manifest
@@ -113,7 +118,6 @@ Optional fields:
     {
       "id": "module-1",
       "title": "Getting Started with Python",
-      "content": "modules/01-getting-started.html",
       "order": 1
     }
   ]
@@ -132,7 +136,6 @@ python3 -m unittest test_edpak_validator.py -v
 
 ```bash
 # Create your course structure
-mkdir -p my-course/modules
 echo '{"title":"My Course","version":"1.0.0","author":"Me","modules":[]}' > my-course/manifest.json
 
 # Package it
