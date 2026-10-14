@@ -1,0 +1,55 @@
+name: Public HTTPS smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_revision:
+        description: Exact native Cloudflare Git revision to verify
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EXPECTED_REVISION: ${{ inputs.expected_revision }}
+    steps:
+      - name: Verify public HTTPS from an independent resolver
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess, time
+          expected = os.environ['EXPECTED_REVISION']
+          assert re.fullmatch(r'[a-f0-9]{40}', expected), 'Invalid revision'
+          def fetch(url):
+              result = subprocess.run(['curl', '-sS', '--max-time', '20',
+                  '--write-out', '\n%{http_code}', url], check=True, capture_output=True)
+              body, code = result.stdout.rsplit(b'\n', 1)
+              return int(code), body
+          for attempt in range(12):
+              code, body = fetch('https://edpak.org/.well-known/cloudflare-build.json')
+              if code == 200 and json.loads(body).get('revision') == expected:
+                  break
+              if attempt == 11:
+                  raise AssertionError('Public host has not reached the expected revision')
+              time.sleep(10)
+          worker_code, worker_body = fetch('https://edpak.bcrt43.workers.dev/.well-known/cloudflare-build.json')
+          assert worker_code == 200 and json.loads(worker_body)['revision'] == expected
+          code, body = fetch('https://edpak.org/')
+          assert code == 200 and b'Edpak Standard v1.0' in body
+          code, body = fetch('https://edpak.org/cloudflare-migration-missing-20261014')
+          assert code == 404, 'Missing pages must return 404'
+          headers = subprocess.check_output(['curl', '-sS', '--max-time', '20',
+              '--output', '/dev/null', '--dump-header', '-',
+              'http://edpak.org/probe/path?migration=1']).decode()
+          assert re.search(r'^Location: https://edpak.org/probe/path\?migration=1\r?$',
+              headers, re.I | re.M), 'HTTPS redirect must preserve path and query'
+          code, body = fetch('https://edpak.org/examples/example-course.edpak')
+          assert code == 200 and body.startswith(b'PK'), 'Course archive unavailable'
+          print(json.dumps({'domain':'edpak.org', 'revision':expected,
+              'normalHTTPS':True, 'workerRevision':True, 'missing404':True,
+              'httpUpgrade':True, 'courseDownload':True}, indent=2))
+          PY
